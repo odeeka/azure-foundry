@@ -1,28 +1,98 @@
+import hashlib
+import json
 import os
+import sys
+from pathlib import Path
+
 from dotenv import load_dotenv
-from azure.identity import DefaultAzureCredential
 from azure.ai.projects import AIProjectClient
 from azure.ai.projects.models import PromptAgentDefinition
+from azure.identity import DefaultAzureCredential
 
 load_dotenv()
 
-my_endpoint = os.getenv("FOUNDRY_PROJECT_ENDPOINT")
-my_model = os.getenv("MODEL_DEPLOYMENT_NAME")
+STATE_FILE = Path(__file__).with_name(".agent_state.json")
+AGENT_NAME = "infra-agent-001"
 
-print("Connecting to Foundry project at:", my_endpoint)
-print("Using AI model deployment named:", my_model)
 
-# Create the Foundry client
-foundry_client = AIProjectClient(
-    endpoint=my_endpoint,
-    credential=DefaultAzureCredential(),
-)
+def require_env(name: str) -> str:
+    value = os.getenv(name)
+    if not value:
+        raise ValueError(f"{name} is not set")
+    return value
 
-# Agent name
-infra_agent_name = "infra-agent-001"
 
-# Agent instructions
-infra_agent_instructions = """
+def load_state() -> dict:
+    if not STATE_FILE.exists():
+        return {}
+
+    try:
+        return json.loads(STATE_FILE.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+
+
+def save_state(state: dict) -> None:
+    STATE_FILE.write_text(json.dumps(state, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def build_fingerprint(agent_name: str, model_name: str, instructions: str) -> str:
+    payload = {
+        "agent_name": agent_name,
+        "instructions": instructions,
+        "model": model_name,
+    }
+    serialized = json.dumps(payload, ensure_ascii=True, sort_keys=True)
+    return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
+def create_or_reuse_agent_version(foundry_client: AIProjectClient, agent_name: str, model_name: str, instructions: str):
+    current_fingerprint = build_fingerprint(agent_name, model_name, instructions)
+    state = load_state()
+
+    if state.get("agent_name") == agent_name and state.get("fingerprint") == current_fingerprint:
+        print(
+            "Agent definition unchanged. Reusing existing version"
+            f" {state.get('version', 'unknown')} for {agent_name}."
+        )
+        return state
+
+    agent = foundry_client.agents.create_version(
+        agent_name=agent_name,
+        definition=PromptAgentDefinition(
+            model=model_name,
+            instructions=instructions,
+        ),
+    )
+
+    state = {
+        "agent_id": agent.id,
+        "agent_name": agent.name,
+        "fingerprint": current_fingerprint,
+        "model": model_name,
+        "version": agent.version,
+    }
+    save_state(state)
+
+    print(
+        f"Agent version created (id: {agent.id}, name: {agent.name}, version: {agent.version})"
+    )
+    return state
+
+
+def main() -> int:
+    endpoint = require_env("FOUNDRY_PROJECT_ENDPOINT")
+    model_name = require_env("MODEL_DEPLOYMENT_NAME")
+
+    print("Connecting to Foundry project at:", endpoint)
+    print("Using AI model deployment named:", model_name)
+
+    foundry_client = AIProjectClient(
+        endpoint=endpoint,
+        credential=DefaultAzureCredential(),
+    )
+
+    infra_agent_instructions = """
 You are "Terraform Infra Triage Buddy".
 
 Help classify and triage Terraform and infrastructure issues.
@@ -52,56 +122,45 @@ Rules:
 - If production, security, or shared infrastructure may be affected, mark severity High and recommend escalation.
 """.strip()
 
-# Create a new agent version
-infra_agent = foundry_client.agents.create_version(
-    agent_name=infra_agent_name,
-    definition=PromptAgentDefinition(
-        model=my_model,
+    create_or_reuse_agent_version(
+        foundry_client=foundry_client,
+        agent_name=AGENT_NAME,
+        model_name=model_name,
         instructions=infra_agent_instructions,
-    ),
-)
+    )
 
-print(
-    f"Agent created (id: {infra_agent.id}, name: {infra_agent.name}, version: {infra_agent.version})"
-)
+    chat_client = foundry_client.get_openai_client()
+    chat_session = chat_client.conversations.create()
 
-# Get an OpenAI-compatible chat client from our Foundry connection
-# This client knows how to send messages and receive replies
-chat_client = foundry_client.get_openai_client()
+    print(f"Created conversation with id: {chat_session.id}")
 
-# Start a brand-new conversation (like opening a fresh chat window)
-# The conversation stores the full history so the agent has context
-chat_session = chat_client.conversations.create()
+    while True:
+        user_message = input("You: ").strip()
 
-# Show the conversation ID so we know it was created
-print(f"Created conversation with id: {chat_session.id}")
+        if user_message.lower() in ["exit", "quit"]:
+            print("Ending the conversation.")
+            return 0
 
-# This flag keeps the chat loop running — set it to False to stop
-is_chatting = True
+        if not user_message:
+            continue
 
-while is_chatting:
-    # Wait for the user to type a message
-    user_message = input("You: ")
-
-    # If the user types "exit" or "quit", end the conversation
-    if user_message.lower() in ["exit", "quit"]:
-        is_chatting = False
-        print("Ending the conversation. Stay active and healthy!")
-    else:
-        # Send the user's message to the Fitness Coach agent and get a reply
-        # - conversation: links this message to our ongoing chat session
-        # - extra_body: tells Foundry which agent should respond
-        # - input: the actual message text from the user
         infra_agent_reply = chat_client.responses.create(
             conversation=chat_session.id,
             extra_body={
                 "agent_reference": {
-                    "name": infra_agent_name,
-                    "type": "agent_reference"
+                    "name": AGENT_NAME,
+                    "type": "agent_reference",
                 }
             },
-            input=user_message
+            input=user_message,
         )
 
-        # Display the agent's response
         print(f"Infra Agent: {infra_agent_reply.output_text}")
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main())
+    except Exception as exc:
+        print(f"Failed to run infra triage agent: {exc}", file=sys.stderr)
+        raise SystemExit(1)

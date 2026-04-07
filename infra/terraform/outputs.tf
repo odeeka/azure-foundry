@@ -22,3 +22,8 @@ output "model_deployment_name" {
   description = "Created model deployment name."
   value       = azurerm_cognitive_deployment.openai.name
 }
+
+output "foundry_api_key" {
+  value     = azurerm_cognitive_account.foundry.primary_access_key
+  sensitive = true
+}

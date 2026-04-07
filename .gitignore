@@ -41,3 +41,5 @@ terraform.rc
 __pycache__/
 .venv/
 python/.venv/
+agents/.agent_state.json
+agents/.code_interpreter_agent_state.json

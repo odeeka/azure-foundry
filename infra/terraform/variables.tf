@@ -1,3 +1,21 @@
+variable "client_id" {
+  type        = string
+  description = "Client ID for Azure authentication. Optional when using az login or managed identity."
+}
+
+variable "client_secret" {
+  type = string
+}
+
+variable "tenant_id" {
+  type        = string
+  description = "Tenant ID for Azure authentication. Optional when using az login or managed identity."
+}
+
+variable "subscription_id" {
+  type = string
+}
+
 variable "location" {
   description = "Azure region for all resources."
   type        = string
@@ -19,11 +37,11 @@ variable "ai_services_sku" {
 variable "foundry_account_name_prefix" {
   description = "Lowercase alphanumeric prefix used for the Azure AI Services account name."
   type        = string
-  default     = "foundrylab"
+  default     = "foundry-demo"
 
   validation {
-    condition     = can(regex("^[a-z0-9]{3,18}$", var.foundry_account_name_prefix))
-    error_message = "foundry_account_name_prefix must be 3-18 characters of lowercase letters and numbers only."
+    condition     = can(regex("^[a-z0-9\\-]{3,18}$", var.foundry_account_name_prefix))
+    error_message = "foundry_account_name_prefix must be 3-18 characters of lowercase letters, numbers, or hyphens only."
   }
 }
 
@@ -84,9 +102,6 @@ variable "assign_current_principal_openai_user_role" {
 variable "tags" {
   description = "Optional tags applied to all resources."
   type        = map(string)
-  default = {
-    project = "azure-ai-foundry-lab"
-    env     = "lab"
-  }
+  default     = {}
 }
 

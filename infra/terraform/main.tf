@@ -1,6 +1,6 @@
 locals {
   suffix               = random_string.suffix.result
-  account_name         = "${var.foundry_account_name_prefix}${local.suffix}"
+  account_name         = "${var.foundry_account_name_prefix}-${local.suffix}"
   custom_subdomain     = local.account_name
   project_name         = "${var.foundry_project_name_prefix}-${local.suffix}"
   network_default_rule = var.public_network_access_enabled ? "Allow" : "Deny"
@@ -60,9 +60,10 @@ resource "azurerm_cognitive_account_project" "foundry" {
 
 # https://azure.microsoft.com/en-us/pricing/details/azure-openai/
 resource "azurerm_cognitive_deployment" "openai" {
-  name                 = var.model_deployment_name
-  cognitive_account_id = azurerm_cognitive_account.foundry.id
-  rai_policy_name      = "Microsoft.DefaultV2"
+  name                       = var.model_deployment_name
+  cognitive_account_id       = azurerm_cognitive_account.foundry.id
+  rai_policy_name            = "Microsoft.DefaultV2"
+  dynamic_throttling_enabled = true
 
   model {
     format  = "OpenAI"
@@ -71,6 +72,7 @@ resource "azurerm_cognitive_deployment" "openai" {
   }
 
   sku {
-    name = var.deployment_sku_name
+    name     = var.deployment_sku_name
+    capacity = 10
   }
 }
