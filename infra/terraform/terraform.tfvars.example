@@ -13,6 +13,32 @@ deployment_sku_name          = "Standard"
 public_network_access_enabled = true
 assign_current_principal_openai_user_role = true
 
+enable_speech_deployment = false
+speech_account_name_prefix = "foundryspeech"
+speech_sku = "S0"
+assign_current_principal_speech_user_role = true
+
+enable_language_deployment = false
+language_account_name_prefix = "foundrylanguage"
+language_sku = "S"
+assign_current_principal_language_user_role = true
+language_role_definition_name = "Cognitive Services Language Reader"
+language_user_object_ids = []
+# Example when local scripts run under an Azure CLI user instead of the Terraform service principal:
+# language_user_object_ids = [
+#   "00000000-0000-0000-0000-000000000000",
+# ]
+
+enable_translator_deployment = false
+translator_account_name_prefix = "foundrytranslator"
+translator_sku = "S1"
+assign_current_principal_translator_user_role = true
+translator_user_object_ids = []
+# Example when local scripts run under an Azure CLI user instead of the Terraform service principal:
+# translator_user_object_ids = [
+#   "00000000-0000-0000-0000-000000000000",
+# ]
+
 tags = {
   project = "azure-ai-foundry-lab"
   env     = "lab"

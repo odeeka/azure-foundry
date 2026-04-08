@@ -1,6 +1,6 @@
 # Azure AI Foundry Lab
 
-This repository contains a small Terraform-based Azure AI Foundry lab plus simple Python and Bash smoke tests.
+This repository contains a small Terraform-based Azure AI Foundry lab plus simple Python and Bash smoke tests and local tool examples.
 
 ## Purpose
 
@@ -10,6 +10,9 @@ The goal is to provision a minimal Foundry environment that is easy to understan
 - Azure AI Services account with Foundry project management enabled
 - Foundry project resource
 - Azure OpenAI model deployment
+- Optional Azure AI Speech resource for tool scenarios
+- Optional Azure AI Language resource for text analytics tool scenarios
+- Optional Azure AI Translator resource for translation tool scenarios
 - Optional RBAC assignment for the current authenticated principal
 
 The repository is designed for learning and controlled experimentation. It is not a production baseline.
@@ -30,7 +33,7 @@ Agent workflows are not provisioned directly here. The repo prepares the core pl
 
 ### Tools / Integrations
 
-The Python and Bash folders contain local smoke tests to verify the deployed endpoint with either the Azure AI Projects SDK or the OpenAI-compatible API.
+The `python/`, `bash/`, and `tools/` folders contain local validation scripts and example integrations that run against the deployed services. The `tools/` folder is the place for standalone tool-oriented Python examples. The notebooks there are reference material only.
 
 ## Repository Structure
 
@@ -47,9 +50,18 @@ The Python and Bash folders contain local smoke tests to verify the deployed end
 │       ├── outputs.tf
 │       ├── providers.tf
 │       ├── rbac.tf
+│       ├── language.tf
+│       ├── speech.tf
+│       ├── translator.tf
 │       ├── terraform.tfvars
 │       ├── terraform.tfvars.example
-│       └── variables.tf
+│       ├── variables.tf
+│       └── README.md
+├── tools/
+│   ├── README.md
+│   ├── 01_speech_tool.py
+│   ├── main.py
+│   └── foundry-speech.ipynb
 └── python/
     ├── README.md
     ├── chat_with_openai.py
@@ -63,9 +75,13 @@ The Python and Bash folders contain local smoke tests to verify the deployed end
 - `variables.tf`: Input variables for naming, model settings, tags, RBAC, and network access.
 - `data.tf`: Reads the current authenticated Azure principal.
 - `main.tf`: Creates the resource group, Azure AI Services account, Foundry project, and model deployment.
+- `language.tf`: Optionally creates a dedicated Azure AI Language resource with a custom subdomain for text analytics scenarios.
+- `speech.tf`: Optionally creates a dedicated Azure AI Speech resource with a custom subdomain for Speech SDK scenarios.
+- `translator.tf`: Optionally creates a dedicated Azure AI Translator resource with a custom subdomain for translation scenarios.
 - `rbac.tf`: Optionally grants the current principal the `Cognitive Services OpenAI User` role on the account.
-- `outputs.tf`: Returns the key names and endpoints needed after deployment.
+- `outputs.tf`: Returns the names and endpoints needed after deployment, including optional Speech outputs.
 - `backend.hcl.example`: Example values for moving Terraform state to Azure Storage.
+- `README.md`: Terraform-specific usage notes, including the optional Speech deployment.
 
 ## Prerequisites
 
@@ -133,6 +149,10 @@ terraform destroy
 ### Python
 
 See [python/README.md](python/README.md) for the local setup. These scripts are for manual validation, not automated production operations.
+
+### Tools
+
+See [tools/README.md](tools/README.md) for the local tool examples. If you enable the optional Speech, Language, or Translator deployment in Terraform, use the corresponding outputs for the local scripts.
 
 ### Bash
 

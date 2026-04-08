@@ -99,6 +99,136 @@ variable "assign_current_principal_openai_user_role" {
   default     = true
 }
 
+variable "enable_speech_deployment" {
+  description = "Whether to deploy a dedicated Azure AI Speech resource for the speech notebook demo."
+  type        = bool
+  default     = false
+}
+
+variable "speech_account_name_prefix" {
+  description = "Lowercase alphanumeric prefix used for the Azure AI Speech account name."
+  type        = string
+  default     = "foundry-speech"
+
+  validation {
+    condition     = can(regex("^[a-z0-9\\-]{3,24}$", var.speech_account_name_prefix))
+    error_message = "speech_account_name_prefix must be 3-24 characters of lowercase letters, numbers, or hyphens only."
+  }
+}
+
+variable "speech_sku" {
+  description = "SKU for the Azure AI Speech resource. F0 is free tier and S0 is standard."
+  type        = string
+  default     = "S0"
+
+  validation {
+    condition     = contains(["F0", "S0"], var.speech_sku)
+    error_message = "speech_sku must be either F0 or S0."
+  }
+}
+
+variable "assign_current_principal_speech_user_role" {
+  description = "Assign the current authenticated principal the Cognitive Services Speech User role on the speech account."
+  type        = bool
+  default     = true
+}
+
+variable "enable_language_deployment" {
+  description = "Whether to deploy a dedicated Azure AI Language resource for text analytics tool scenarios."
+  type        = bool
+  default     = false
+}
+
+variable "language_account_name_prefix" {
+  description = "Lowercase alphanumeric prefix used for the Azure AI Language account name."
+  type        = string
+  default     = "foundry-language"
+
+  validation {
+    condition     = can(regex("^[a-z0-9\\-]{3,24}$", var.language_account_name_prefix))
+    error_message = "language_account_name_prefix must be 3-24 characters of lowercase letters, numbers, or hyphens only."
+  }
+}
+
+variable "language_sku" {
+  description = "SKU for the Azure AI Language resource. F0 is free tier and S is standard."
+  type        = string
+  default     = "S"
+
+  validation {
+    condition     = contains(["F0", "S"], var.language_sku)
+    error_message = "language_sku must be either F0 or S."
+  }
+}
+
+variable "assign_current_principal_language_user_role" {
+  description = "Assign the current authenticated principal the Cognitive Services User role on the language account."
+  type        = bool
+  default     = true
+}
+
+variable "language_role_definition_name" {
+  description = "Built-in RBAC role assigned on the Azure AI Language account for data-plane access. Use a Language-specific role such as Cognitive Services Language Reader, Writer, or Owner."
+  type        = string
+  default     = "Cognitive Services Language Reader"
+
+  validation {
+    condition = contains([
+      "Cognitive Services Language Reader",
+      "Cognitive Services Language Writer",
+      "Cognitive Services Language Owner",
+      "Cognitive Services User",
+    ], var.language_role_definition_name)
+    error_message = "language_role_definition_name must be one of: Cognitive Services Language Reader, Cognitive Services Language Writer, Cognitive Services Language Owner, or Cognitive Services User."
+  }
+}
+
+variable "language_user_object_ids" {
+  description = "Additional Microsoft Entra user object IDs that should receive the Cognitive Services User role on the language account. Useful when Terraform runs as a service principal but local tools run as signed-in users."
+  type        = list(string)
+  default     = []
+}
+
+variable "enable_translator_deployment" {
+  description = "Whether to deploy a dedicated Azure AI Translator resource for translation tool scenarios."
+  type        = bool
+  default     = false
+}
+
+variable "translator_account_name_prefix" {
+  description = "Lowercase alphanumeric prefix used for the Azure AI Translator account name."
+  type        = string
+  default     = "foundry-translator"
+
+  validation {
+    condition     = can(regex("^[a-z0-9\\-]{3,24}$", var.translator_account_name_prefix))
+    error_message = "translator_account_name_prefix must be 3-24 characters of lowercase letters, numbers, or hyphens only."
+  }
+}
+
+variable "translator_sku" {
+  description = "SKU for the Azure AI Translator resource. F0 is free tier and S1 is standard."
+  type        = string
+  default     = "S1"
+
+  validation {
+    condition     = contains(["F0", "S1"], var.translator_sku)
+    error_message = "translator_sku must be either F0 or S1."
+  }
+}
+
+variable "assign_current_principal_translator_user_role" {
+  description = "Assign the current authenticated principal the Cognitive Services User role on the translator account."
+  type        = bool
+  default     = true
+}
+
+variable "translator_user_object_ids" {
+  description = "Additional Microsoft Entra user object IDs that should receive the Cognitive Services User role on the translator account. Useful when Terraform runs as a service principal but local tools run as signed-in users."
+  type        = list(string)
+  default     = []
+}
+
 variable "tags" {
   description = "Optional tags applied to all resources."
   type        = map(string)
