@@ -1,4 +1,5 @@
 import os
+import sys
 
 from dotenv import load_dotenv
 from azure.ai.projects import AIProjectClient
@@ -7,47 +8,68 @@ from azure.identity import DefaultAzureCredential
 
 load_dotenv()
 
-my_endpoint = os.getenv("FOUNDRY_PROJECT_ENDPOINT")
-my_model = os.getenv("MODEL_DEPLOYMENT_NAME")
+AGENT_NAME = "WebSearchAgent-001"
 
-print(f"Connecting to Foundry project at {my_endpoint} using model {my_model}...")
 
-foundry_client = AIProjectClient(
-    endpoint=my_endpoint,
-    credential=DefaultAzureCredential(),
-)
+def require_env(name: str) -> str:
+    value = os.getenv(name)
+    if not value:
+        raise ValueError(f"{name} is not set")
+    return value
 
-chat_client = foundry_client.get_openai_client()
 
-# Create a web-enabled prompt agent backed by the configured model.
-web_search_agent = foundry_client.agents.create_version(
-    agent_name="WebSearchAgent-001",
-    definition=PromptAgentDefinition(
-        model=my_model,
-        instructions="You are a research assistant that searches the web to find current, accurate answers to user questions.",
-        tools=[
-            WebSearchPreviewTool()
-        ]
+def main() -> int:
+    endpoint = require_env("FOUNDRY_PROJECT_ENDPOINT")
+    model_name = require_env("MODEL_DEPLOYMENT_NAME")
+
+    print(f"Connecting to Foundry project at {endpoint} using model {model_name}...")
+
+    foundry_client = AIProjectClient(
+        endpoint=endpoint,
+        credential=DefaultAzureCredential(),
     )
-)
 
-# Start a fresh conversation for the request/response exchange.
-chat_session = chat_client.conversations.create()
-print(f"Created conversation with id: {chat_session.id}")
+    chat_client = foundry_client.get_openai_client()
 
-# Ask a question that benefits from current web results.
-question = "What are the top 10 DevOps tools in 2026?"
+    # Create a web-enabled prompt agent backed by the configured model.
+    # WebSearchPreviewTool is a built-in Foundry capability that lets the agent
+    # query Bing to answer questions that need current external information.
+    foundry_client.agents.create_version(
+        agent_name=AGENT_NAME,
+        definition=PromptAgentDefinition(
+            model=model_name,
+            instructions="You are a research assistant that searches the web to find current, accurate answers to user questions.",
+            tools=[WebSearchPreviewTool()],
+        ),
+    )
 
-# Route the prompt to the named Foundry agent.
-response = chat_client.responses.create(
-    conversation=chat_session.id,
-    extra_body={
-        "agent_reference": {
-            "name": "WebSearchAgent-001",
-            "type": "agent_reference"
-        }
-    },
-    input=question
-)
+    # Start a fresh conversation for the request/response exchange.
+    chat_session = chat_client.conversations.create()
+    print(f"Created conversation with id: {chat_session.id}")
 
-print(f"Agent response: {response.output_text}")
+    # Ask a question that benefits from current web results.
+    question = "What are the top 10 DevOps tools in 2026?"
+
+    # Route the prompt to the named Foundry agent.
+    response = chat_client.responses.create(
+        conversation=chat_session.id,
+        extra_body={
+            "agent_reference": {
+                "name": AGENT_NAME,
+                "type": "agent_reference",
+            }
+        },
+        input=question,
+    )
+
+    print(f"Agent response: {response.output_text}")
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main())
+    except Exception as exc:
+        print(f"Failed to run web search agent: {exc}", file=sys.stderr)
+        raise SystemExit(1)
+

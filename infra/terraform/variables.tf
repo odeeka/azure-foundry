@@ -4,7 +4,8 @@ variable "client_id" {
 }
 
 variable "client_secret" {
-  type = string
+  type      = string
+  sensitive = true
 }
 
 variable "tenant_id" {
