@@ -144,6 +144,12 @@ variable "assign_current_principal_speech_user_role" {
   default     = true
 }
 
+variable "speech_user_object_ids" {
+  description = "Additional Microsoft Entra user object IDs that should receive the Cognitive Services Speech User role on the speech account. Useful when Terraform runs as a service principal but local tools run as signed-in users."
+  type        = list(string)
+  default     = []
+}
+
 variable "enable_language_deployment" {
   description = "Whether to deploy a dedicated Azure AI Language resource for text analytics tool scenarios."
   type        = bool

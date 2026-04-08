@@ -19,5 +19,5 @@ resource "azurerm_cognitive_deployment" "flux" {
 
 # import {
 #   to = azurerm_cognitive_deployment.flux
-#   id = "/subscriptions/70dfe42b-7bb7-418d-bcef-0c66090f0ec3/resourceGroups/rg-foundry/providers/Microsoft.CognitiveServices/accounts/foundry-demo-or6zdr/deployments/FLUX.1-Kontext-pro"
+#   id = "/subscriptions/70dfe42b-7bb7-418d-bcef-0c66090f0ec3/resourceGroups/rg-foundry/providers/Microsoft.CognitiveServices/accounts/foundry-demo-7vw8dn/deployments/FLUX.1-Kontext-pro"
 # }
