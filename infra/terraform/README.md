@@ -11,7 +11,7 @@ By default, the configuration deploys:
 - a Foundry project
 - an Azure OpenAI model deployment
 
-It can also optionally deploy dedicated Azure AI Speech, Azure AI Language, Azure AI Translator, and Azure AI Document Intelligence resources.
+It can also optionally deploy dedicated Azure AI Speech, Azure AI Language, Azure AI Translator, Azure AI Document Intelligence, and Azure AI Search resources.
 
 ## Optional Speech Deployment
 
@@ -170,10 +170,13 @@ Depending on the flags you enable, Terraform can assign the current authenticate
 - the role specified by `language_role_definition_name` on the Language account
 - `Cognitive Services User` on the Translator account
 - `Cognitive Services User` on the Document Intelligence account
+- `Search Service Contributor`, `Search Index Data Contributor`, and `Search Index Data Reader` on the Search service
 
 For Language specifically, Terraform can also assign the same Language role to extra Entra users listed in `language_user_object_ids`.
 For Translator specifically, Terraform can also assign `Cognitive Services User` to extra Entra users listed in `translator_user_object_ids`.
 For Document Intelligence specifically, Terraform can also assign `Cognitive Services User` to extra Entra users listed in `document_intelligence_user_object_ids`.
+For Search specifically, Terraform can also assign the three required Search roles to extra Entra users listed in `search_user_object_ids`.
+For Azure OpenAI access used by Search RAG scenarios, Terraform can also assign `Cognitive Services OpenAI User` to extra Entra users listed in `openai_user_object_ids`.
 
 ## Typical Workflow
 
@@ -185,4 +188,45 @@ terraform plan
 terraform apply
 ```
 
-Use [infra/terraform/terraform.tfvars.example](infra/terraform/terraform.tfvars.example) as the starting point for the base Foundry deployment and the optional Speech, Language, Translator, and Document Intelligence deployments.
+Use [infra/terraform/terraform.tfvars.example](infra/terraform/terraform.tfvars.example) as the starting point for the base Foundry deployment and the optional Speech, Language, Translator, Document Intelligence, and Search deployments.
+
+## Optional Search Deployment
+
+The Search resource is defined in [infra/terraform/search.tf](infra/terraform/search.tf) and is disabled by default.
+
+To enable it, set the following variables in your `terraform.tfvars` file:
+
+```hcl
+enable_search_deployment           = true
+search_service_name_prefix         = "foundrysearch"
+search_sku                         = "basic"
+search_replica_count               = 1
+search_partition_count             = 1
+search_semantic_search_sku         = "free"
+search_local_authentication_enabled = false
+assign_current_principal_search_roles = true
+search_user_object_ids             = []
+openai_user_object_ids             = []
+```
+
+Related variables are defined in [infra/terraform/variables.tf](infra/terraform/variables.tf).
+
+The Search service is created as a dedicated `azurerm_search_service` resource with:
+
+- semantic search enabled
+- local authentication disabled by default for Entra ID aligned notebook scenarios
+- public network access controlled by the shared `public_network_access_enabled` variable
+
+The Search notebook also requires Azure OpenAI access for the RAG example. This repository reuses the main Foundry account and model deployment for that part, so you do not need a second OpenAI resource.
+
+## Search Outputs
+
+When Search deployment is enabled, Terraform returns these outputs from [infra/terraform/outputs.tf](infra/terraform/outputs.tf):
+
+- `search_service_name`
+- `search_endpoint`
+- `search_service_id`
+- `search_openai_endpoint`
+- `search_openai_deployment_name`
+
+These values map directly to the local Search notebook and script configuration in [tools/README.md](tools/README.md).

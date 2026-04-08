@@ -13,6 +13,11 @@ output "ai_services_endpoint" {
   value       = azurerm_cognitive_account.foundry.endpoint
 }
 
+output "ai_services_resource_id" {
+  description = "Resource ID for the Azure AI Services account."
+  value       = azurerm_cognitive_account.foundry.id
+}
+
 output "foundry_project_name" {
   description = "Created Foundry project resource name."
   value       = azurerm_cognitive_account_project.foundry.name
@@ -106,4 +111,29 @@ output "document_intelligence_region" {
 output "document_intelligence_resource_id" {
   description = "Resource ID for the Azure AI Document Intelligence account when document intelligence deployment is enabled."
   value       = var.enable_document_intelligence_deployment ? azurerm_cognitive_account.document_intelligence[0].id : null
+}
+
+output "search_service_name" {
+  description = "Azure AI Search service name when search deployment is enabled."
+  value       = var.enable_search_deployment ? azurerm_search_service.search[0].name : null
+}
+
+output "search_endpoint" {
+  description = "Endpoint for the Azure AI Search service when search deployment is enabled."
+  value       = var.enable_search_deployment ? azurerm_search_service.search[0].endpoint : null
+}
+
+output "search_service_id" {
+  description = "Resource ID for the Azure AI Search service when search deployment is enabled."
+  value       = var.enable_search_deployment ? azurerm_search_service.search[0].id : null
+}
+
+output "search_openai_endpoint" {
+  description = "Azure OpenAI-compatible endpoint to pair with the Azure AI Search service for notebook parity. This reuses the main Foundry account deployment."
+  value       = var.enable_search_deployment ? azurerm_cognitive_account.foundry.endpoint : null
+}
+
+output "search_openai_deployment_name" {
+  description = "Model deployment name to pair with the Azure AI Search service for notebook parity."
+  value       = var.enable_search_deployment ? azurerm_cognitive_deployment.openai.name : null
 }

@@ -99,6 +99,12 @@ variable "assign_current_principal_openai_user_role" {
   default     = true
 }
 
+variable "openai_user_object_ids" {
+  description = "Additional Microsoft Entra user object IDs that should receive the Cognitive Services OpenAI User role on the Foundry account. Useful when Terraform runs as a service principal but local tools run as signed-in users."
+  type        = list(string)
+  default     = []
+}
+
 variable "enable_speech_deployment" {
   description = "Whether to deploy a dedicated Azure AI Speech resource for the speech notebook demo."
   type        = bool
@@ -265,6 +271,65 @@ variable "assign_current_principal_document_intelligence_user_role" {
 
 variable "document_intelligence_user_object_ids" {
   description = "Additional Microsoft Entra user object IDs that should receive the Cognitive Services User role on the document intelligence account. Useful when Terraform runs as a service principal but local tools run as signed-in users."
+  type        = list(string)
+  default     = []
+}
+
+variable "enable_search_deployment" {
+  description = "Whether to deploy a dedicated Azure AI Search service for search and RAG tool scenarios."
+  type        = bool
+  default     = false
+}
+
+variable "search_service_name_prefix" {
+  description = "Lowercase alphanumeric prefix used for the Azure AI Search service name."
+  type        = string
+  default     = "foundry-search"
+
+  validation {
+    condition     = can(regex("^[a-z0-9-]{2,24}$", var.search_service_name_prefix))
+    error_message = "search_service_name_prefix must be 2-24 characters of lowercase letters, numbers, or hyphens only."
+  }
+}
+
+variable "search_sku" {
+  description = "SKU for the Azure AI Search service. Common values are free, basic, standard, standard2, or standard3."
+  type        = string
+  default     = "basic"
+}
+
+variable "search_replica_count" {
+  description = "Replica count for the Azure AI Search service."
+  type        = number
+  default     = 1
+}
+
+variable "search_partition_count" {
+  description = "Partition count for the Azure AI Search service."
+  type        = number
+  default     = 1
+}
+
+variable "search_semantic_search_sku" {
+  description = "Semantic search plan for the Azure AI Search service. Use free or standard when semantic ranking should be enabled."
+  type        = string
+  default     = "free"
+}
+
+variable "search_local_authentication_enabled" {
+  description = "Whether API key based local authentication remains enabled on the Azure AI Search service. Set false to align with Entra ID only notebook scenarios."
+  type        = bool
+  default     = false
+}
+
+variable "assign_current_principal_search_roles" {
+  description = "Assign the current authenticated principal the Search Service Contributor, Search Index Data Contributor, and Search Index Data Reader roles on the search service."
+  type        = bool
+  default     = true
+}
+
+variable "search_user_object_ids" {
+  description = "Additional Microsoft Entra user object IDs that should receive the required Azure AI Search roles. Useful when Terraform runs as a service principal but local tools run as signed-in users."
   type        = list(string)
   default     = []
 }

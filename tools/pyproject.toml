@@ -11,4 +11,6 @@ dependencies = [
     "azure-ai-textanalytics==5.4.0",
     "requests==2.33.1",
     "azure-ai-documentintelligence==1.0.2",
+    "azure-search-documents==11.6.0",
+    "openai==2.30.0",
 ]

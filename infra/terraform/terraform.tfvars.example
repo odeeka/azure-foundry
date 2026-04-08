@@ -12,6 +12,11 @@ model_version                = "2025-04-14"
 deployment_sku_name          = "Standard"
 public_network_access_enabled = true
 assign_current_principal_openai_user_role = true
+openai_user_object_ids = []
+# Example when local tools run under an Azure CLI user instead of the Terraform service principal:
+# openai_user_object_ids = [
+#   "00000000-0000-0000-0000-000000000000",
+# ]
 
 enable_speech_deployment = false
 speech_account_name_prefix = "foundryspeech"
@@ -46,6 +51,20 @@ assign_current_principal_document_intelligence_user_role = true
 document_intelligence_user_object_ids = []
 # Example when local scripts run under an Azure CLI user instead of the Terraform service principal:
 # document_intelligence_user_object_ids = [
+#   "00000000-0000-0000-0000-000000000000",
+# ]
+
+enable_search_deployment = false
+search_service_name_prefix = "foundrysearch"
+search_sku = "basic"
+search_replica_count = 1
+search_partition_count = 1
+search_semantic_search_sku = "free"
+search_local_authentication_enabled = false
+assign_current_principal_search_roles = true
+search_user_object_ids = []
+# Example when local scripts run under an Azure CLI user instead of the Terraform service principal:
+# search_user_object_ids = [
 #   "00000000-0000-0000-0000-000000000000",
 # ]
 

@@ -217,3 +217,52 @@ If you keep `assign_current_principal_document_intelligence_user_role = true`, t
 If Terraform runs with a service principal but your local script runs with `az login`, also set `document_intelligence_user_object_ids` in Terraform to the Entra object ID of the user who will run the script.
 
 The script [tools/04_document_intelligence.py](tools/04_document_intelligence.py) is the local Python working area for these scenarios, while the notebook remains reference material.
+
+---
+
+## Search
+
+The Search examples in this folder target a dedicated Azure AI Search service and reuse the main Foundry OpenAI deployment for RAG scenarios.
+
+Typical scenarios:
+
+- full-text search across indexed documents
+- filtered queries by category or metadata
+- semantic ranking
+- RAG with Azure AI Search plus Azure OpenAI
+- index creation and document upload with Entra ID authentication
+
+If you want to run Search examples from this folder, enable the optional Search deployment in Terraform.
+
+Relevant Terraform files:
+
+- [infra/terraform/search.tf](infra/terraform/search.tf)
+- [infra/terraform/variables.tf](infra/terraform/variables.tf)
+- [infra/terraform/outputs.tf](infra/terraform/outputs.tf)
+- [infra/terraform/README.md](infra/terraform/README.md)
+
+Set the following variables in your Terraform settings before `terraform apply`:
+
+- `enable_search_deployment = true`
+- `search_service_name_prefix = "<unique-prefix>"`
+- `search_sku = "basic"` or another supported Search SKU
+- `search_semantic_search_sku = "free"` or `"standard"`
+- `search_local_authentication_enabled = false`
+
+After deployment, use these Terraform outputs in your local `.env` or script configuration:
+
+- `search_endpoint`
+- `search_openai_endpoint`
+- `search_openai_deployment_name`
+
+Set `SEARCH_INDEX_NAME` empty on the first run. The notebook or local script can create the index and then write the actual index name back into `.env`.
+
+If you keep `assign_current_principal_search_roles = true`, the current authenticated principal also receives these Search roles on the Search service:
+
+- `Search Service Contributor`
+- `Search Index Data Contributor`
+- `Search Index Data Reader`
+
+If Terraform runs with a service principal but your local script runs with `az login`, also set both `search_user_object_ids` and `openai_user_object_ids` in Terraform to the Entra object ID of the user who will run the script. The Search roles are needed for indexing and querying, and the OpenAI role is needed for the RAG call.
+
+The script [tools/05_search_tool.py](tools/05_search_tool.py) is the local Python working area for these scenarios, while the notebook remains reference material.

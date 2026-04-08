@@ -5,6 +5,15 @@ resource "azurerm_role_assignment" "terraform_spi_openai_user" {
   principal_id         = data.azurerm_client_config.current.object_id
 }
 
+resource "azurerm_role_assignment" "openai_named_users" {
+  for_each = toset(var.openai_user_object_ids)
+
+  scope                = azurerm_cognitive_account.foundry.id
+  role_definition_name = "Cognitive Services OpenAI User"
+  principal_id         = each.value
+  principal_type       = "User"
+}
+
 resource "azurerm_role_assignment" "terraform_spi_speech_user" {
   count                = var.enable_speech_deployment && var.assign_current_principal_speech_user_role ? 1 : 0
   scope                = azurerm_cognitive_account.speech[0].id
@@ -56,6 +65,54 @@ resource "azurerm_role_assignment" "document_intelligence_named_users" {
 
   scope                = azurerm_cognitive_account.document_intelligence[0].id
   role_definition_name = "Cognitive Services User"
+  principal_id         = each.value
+  principal_type       = "User"
+}
+
+resource "azurerm_role_assignment" "terraform_spi_search_service_contributor" {
+  count                = var.enable_search_deployment && var.assign_current_principal_search_roles ? 1 : 0
+  scope                = azurerm_search_service.search[0].id
+  role_definition_name = "Search Service Contributor"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
+resource "azurerm_role_assignment" "terraform_spi_search_index_data_contributor" {
+  count                = var.enable_search_deployment && var.assign_current_principal_search_roles ? 1 : 0
+  scope                = azurerm_search_service.search[0].id
+  role_definition_name = "Search Index Data Contributor"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
+resource "azurerm_role_assignment" "terraform_spi_search_index_data_reader" {
+  count                = var.enable_search_deployment && var.assign_current_principal_search_roles ? 1 : 0
+  scope                = azurerm_search_service.search[0].id
+  role_definition_name = "Search Index Data Reader"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
+resource "azurerm_role_assignment" "search_named_users_service_contributor" {
+  for_each = var.enable_search_deployment ? toset(var.search_user_object_ids) : []
+
+  scope                = azurerm_search_service.search[0].id
+  role_definition_name = "Search Service Contributor"
+  principal_id         = each.value
+  principal_type       = "User"
+}
+
+resource "azurerm_role_assignment" "search_named_users_index_data_contributor" {
+  for_each = var.enable_search_deployment ? toset(var.search_user_object_ids) : []
+
+  scope                = azurerm_search_service.search[0].id
+  role_definition_name = "Search Index Data Contributor"
+  principal_id         = each.value
+  principal_type       = "User"
+}
+
+resource "azurerm_role_assignment" "search_named_users_index_data_reader" {
+  for_each = var.enable_search_deployment ? toset(var.search_user_object_ids) : []
+
+  scope                = azurerm_search_service.search[0].id
+  role_definition_name = "Search Index Data Reader"
   principal_id         = each.value
   principal_type       = "User"
 }
