@@ -24,7 +24,7 @@ speech_config = speechsdk.SpeechConfig(
 )
 
 speech_config.speech_synthesis_voice_name = "en-US-JennyMultilingualNeural"
-#speech_config.speech_synthesis_voice_name = "hu-HU-NoemiNeural"
+# To use a different voice, replace the name above, e.g. "hu-HU-NoemiNeural"
 
 output_wav = "tts_output.wav"
 audio_config = speechsdk.audio.AudioConfig(filename=output_wav)
@@ -44,7 +44,6 @@ sample_text = (
 result = synthesizer.speak_text_async(sample_text).get()
 
 if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
-    print("OK")
     print(f"Audio saved to {output_wav}")
 else:
     print(result.reason)
@@ -67,7 +66,7 @@ ssml_content = """
 </speak>
 """
 
-# SSMSL allows us to add pauses, emphasis, and other speech effects to make the audio more engaging.
+# SSML allows us to add pauses, emphasis, and other speech effects to make the audio more engaging.
 # Save to a different file so we can compare
 ssml_output_wav = "ssml_output.wav"
 ssml_audio_config = speechsdk.audio.AudioConfig(filename=ssml_output_wav)

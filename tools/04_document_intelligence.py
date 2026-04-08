@@ -7,6 +7,8 @@ from azure.ai.documentintelligence.models import AnalyzeDocumentRequest, Analyze
 load_dotenv(override=True)
 
 doc_endpoint = os.getenv("DOCUMENT_INTELLIGENCE_ENDPOINT")
+if not doc_endpoint:
+    raise ValueError("DOCUMENT_INTELLIGENCE_ENDPOINT must be set in tools/.env.")
 
 # Authenticate via Entra ID (uses az login credentials)
 credential = DefaultAzureCredential()

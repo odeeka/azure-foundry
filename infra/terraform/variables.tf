@@ -1,15 +1,20 @@
 variable "client_id" {
   type        = string
   description = "Client ID for Azure authentication. Optional when using az login or managed identity."
+  default     = null
 }
 
 variable "client_secret" {
-  type = string
+  type        = string
+  description = "Client secret for Azure SPN authentication. Optional when using az login or managed identity."
+  sensitive   = true
+  default     = null
 }
 
 variable "tenant_id" {
   type        = string
   description = "Tenant ID for Azure authentication. Optional when using az login or managed identity."
+  default     = null
 }
 
 variable "subscription_id" {
