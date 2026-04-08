@@ -30,7 +30,7 @@ def normalize_openai_base_url(endpoint_base: str) -> str:
 def main() -> int:
     endpoint_base = require_env("AZURE_ENDPOINT")
     api_key = require_env("AZURE_API_KEY")
-    model_name = os.environ.get("MODEL_DEPLOYMENT_NAME", "example-cd")
+    model_name = os.environ.get("MODEL_DEPLOYMENT_NAME", "gpt-4-1-mini")
 
     client = OpenAI(
         base_url=normalize_openai_base_url(endpoint_base),

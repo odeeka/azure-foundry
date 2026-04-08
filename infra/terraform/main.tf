@@ -18,7 +18,9 @@ resource "azurerm_resource_group" "foundry" {
   tags     = var.tags
 }
 
-# Legacy Terraform Resources for Azure AI Foundry
+# Azure AI Foundry resources: azurerm_cognitive_account with kind = "AIServices" is the
+# current recommended Terraform resource for Foundry. azurerm_ai_foundry targets the legacy
+# hub-based architecture and is not needed here.
 resource "azurerm_cognitive_account" "foundry" {
   name                          = local.account_name
   location                      = azurerm_resource_group.foundry.location

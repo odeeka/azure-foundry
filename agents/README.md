@@ -15,7 +15,11 @@ Both are suitable for local demos and prompt iteration, not for production use.
 
 - `01_infra_triage.py`: Main script. Connects to Azure AI Foundry, creates a prompt agent version only when the definition changes, starts a conversation, and runs a local chat loop.
 - `02_websearch_agent.py`: Sample script. Connects to Azure AI Foundry, creates a web-search-enabled prompt agent, opens a conversation, submits one question, and prints the response.
-- `.env.example`: Example environment variables required by the script.
+- `03_code_interpreter_agent.py`: Analysis script. Connects to Azure AI Foundry, creates a code interpreter agent version that includes an uploaded dataset file, submits a sales analysis prompt, retries on rate-limit errors with exponential backoff, and downloads the generated chart to the local folder.
+- `04_openapi_agent.py`: Demo script. Connects to Azure AI Foundry, creates a prompt agent with an OpenAPI tool attached to the Bored Activity API, opens a conversation, submits one question, and prints the response. The file uses inline comments throughout to explain each step.
+- `activities_openapi.json`: OpenAPI spec for the Bored Activity API, used by `04_openapi_agent.py`.
+- `bookstore_sales.csv`: Sample dataset used by `03_code_interpreter_agent.py`.
+- `.env.example`: Example environment variables required by the scripts.
 - `.env`: Local developer configuration. This should stay untracked.
 - `pyproject.toml`: Python project metadata and dependencies.
 - `uv.lock`: Locked dependency versions for reproducible local installs.
@@ -49,6 +53,36 @@ The flow in `02_websearch_agent.py` is:
 6. Attach the built-in `WebSearchPreviewTool` so the agent can use live web search.
 7. Create a new conversation.
 8. Submit a single research question and print the returned answer.
+
+### 03 Code Interpreter Agent
+
+The flow in `03_code_interpreter_agent.py` is:
+
+1. Load environment variables from `.env`.
+2. Read `FOUNDRY_PROJECT_ENDPOINT` and `MODEL_DEPLOYMENT_NAME`.
+3. Authenticate with Azure using `DefaultAzureCredential`.
+4. Create an `AIProjectClient` and OpenAI-compatible chat client.
+5. Compute a SHA-256 hash of `bookstore_sales.csv` and build a compound fingerprint from model name, instructions, and the dataset hash.
+6. If the fingerprint matches the previous run, reuse the existing agent version and uploaded file ID.
+7. Otherwise, upload the CSV to the Foundry files store and create a new agent version with a `CodeInterpreterTool` that references the uploaded file.
+8. Start a conversation and submit the analysis prompt.
+9. Retry the API call with exponential backoff if the deployment returns a `RateLimitError`.
+10. Walk the response output annotations in reverse to find a `container_file_citation` that references the generated chart.
+11. Download the chart file to the local folder.
+
+### 04 OpenAPI Tool Agent
+
+The flow in `04_openapi_agent.py` is:
+
+1. Load environment variables from `.env`.
+2. Read the Foundry project endpoint and model deployment name.
+3. Authenticate with Azure using `DefaultAzureCredential`.
+4. Load `activities_openapi.json` with `jsonref.loads` to resolve any `$ref` pointers into a fully expanded spec.
+5. Create an `AIProjectClient` and OpenAI-compatible chat client.
+6. Build a tool configuration dict of type `"openapi"` containing the resolved spec and anonymous auth.
+7. Create an agent version with the OpenAPI tool attached so the agent can make real REST calls to the activity API.
+8. Open a new conversation and submit a question that benefits from live activity suggestions.
+9. Print the agent's response.
 
 ## Agent Behavior
 
@@ -114,7 +148,7 @@ Copy `.env.example` to `.env` and set the values:
 
 ```dotenv
 FOUNDRY_PROJECT_ENDPOINT=https://<your-foundry-project-endpoint>
-MODEL_DEPLOYMENT_NAME=example-cd
+MODEL_DEPLOYMENT_NAME=gpt-4-1-mini
 ```
 
 Notes:

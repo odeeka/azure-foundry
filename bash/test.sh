@@ -10,7 +10,7 @@ fi
 : "${AZURE_ENDPOINT:?AZURE_ENDPOINT must be set}"
 : "${AZURE_API_KEY:?AZURE_API_KEY must be set}"
 
-MODEL_DEPLOYMENT_NAME="${MODEL_DEPLOYMENT_NAME:-example-cd}"
+MODEL_DEPLOYMENT_NAME="${MODEL_DEPLOYMENT_NAME:-gpt-4-1-mini}"
 OPENAI_ENDPOINT="${AZURE_ENDPOINT%/}"
 OPENAI_ENDPOINT="${OPENAI_ENDPOINT/.cognitiveservices.azure.com/.openai.azure.com}"
 

@@ -2,7 +2,13 @@
 
 This folder contains local Python examples for service-specific tool scenarios that sit alongside the main Foundry lab deployment.
 
-The notebook in this folder is reference material only. The intended working area is Python code in this directory, for example standalone scripts such as [tools/01_speech_tool.py](tools/01_speech_tool.py).
+Copy `.env.example` to `.env` and fill in the values from `terraform output` before running any script:
+
+```bash
+cp .env.example .env
+```
+
+The scripts in this directory use `DefaultAzureCredential` for authentication. Run `az login` before executing any script.
 
 ## Speech
 

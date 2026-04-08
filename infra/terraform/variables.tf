@@ -66,7 +66,7 @@ variable "foundry_project_description" {
 variable "model_deployment_name" {
   description = "Name of the Azure OpenAI model deployment."
   type        = string
-  default     = "example-cd"
+  default     = "gpt-4-1-mini"
 }
 
 variable "model_name" {

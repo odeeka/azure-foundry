@@ -14,7 +14,7 @@ Create or update `.env` with safe local values:
 
 ```dotenv
 AZURE_ENDPOINT=https://<your-foundry-account>.cognitiveservices.azure.com/
-MODEL_DEPLOYMENT_NAME=example-cd
+MODEL_DEPLOYMENT_NAME=gpt-4-1-mini
 AZURE_API_KEY=<optional-api-key>
 ```
 

@@ -35,13 +35,60 @@ Agent workflows are not provisioned directly here. The repo prepares the core pl
 
 ### Tools / Integrations
 
-The `python/`, `bash/`, and `tools/` folders contain local validation scripts and example integrations that run against the deployed services. The `tools/` folder is the place for standalone tool-oriented Python examples. The notebooks there are reference material only.
+The repository has three code areas with different purposes:
+
+- **`agents/`** uses the `azure-ai-projects` SDK and `AIProjectClient` to define, version, and run agents orchestrated by the Foundry project. This is the place for agent workflows, tool attachments (web search, code interpreter, OpenAPI), and agent lifecycle patterns.
+- **`tools/`** uses service-specific Azure SDK clients — `TextAnalyticsClient`, `DocumentIntelligenceClient`, `SearchClient`, and the Speech SDK — to call each cognitive service directly, without an agent layer. Each script is a focused end-to-end example for one service.
+- **`python/`** and **`bash/`** are minimal smoke tests that validate the base Foundry deployment (model response through the Responses API and endpoint reachability).
+
+## Architecture
+
+```mermaid
+graph TB
+    subgraph az["Azure — Resource Group"]
+        ACCT["AI Services Account\nkind = AIServices"]
+        PROJ["Foundry Project"]
+        MODEL["Model Deployment\ngpt-4-1-mini"]
+        SPEECH["Speech — optional"]
+        LANG["Language — optional"]
+        TRANS["Translator — optional"]
+        DI["Document Intelligence — optional"]
+        SRCH["AI Search — optional"]
+        ACCT --> PROJ
+        ACCT --> MODEL
+    end
+
+    subgraph repo["Repository"]
+        AGENTS["agents/\nAIProjectClient\nAgent workflows"]
+        TOOLS["tools/\nCognitive Service SDKs\nDirect integration"]
+        PY["python/ + bash/\nSmoke tests"]
+    end
+
+    AGENTS -->|AIProjectClient| PROJ
+    AGENTS -->|inference| MODEL
+    TOOLS -->|Speech SDK| SPEECH
+    TOOLS -->|TextAnalytics SDK| LANG
+    TOOLS -->|REST API| TRANS
+    TOOLS -->|DocumentIntelligence SDK| DI
+    TOOLS -->|SearchClient| SRCH
+    TOOLS -->|RAG completions| MODEL
+    PY -->|Responses API| ACCT
+```
 
 ## Repository Structure
 
 ```text
 .
 ├── README.md
+├── agents/
+│   ├── README.md
+│   ├── 01_infra_triage.py
+│   ├── 02_websearch_agent.py
+│   ├── 03_code_interpreter_agent.py
+│   ├── 04_openapi_agent.py
+│   ├── activities_openapi.json
+│   ├── bookstore_sales.csv
+│   └── pyproject.toml
 ├── bash/
 │   └── test.sh
 ├── infra/
@@ -57,17 +104,21 @@ The `python/`, `bash/`, and `tools/` folders contain local validation scripts an
 │       ├── translator.tf
 │       ├── document_intelligence.tf
 │       ├── search.tf
-│       ├── terraform.tfvars
 │       ├── terraform.tfvars.example
 │       ├── variables.tf
 │       └── README.md
 ├── tools/
 │   ├── README.md
+│   ├── .env.example
 │   ├── 01_speech_tool.py
-│   ├── main.py
-│   └── foundry-speech.ipynb
+│   ├── 02_language_tool.py
+│   ├── 03_translation_tool.py
+│   ├── 04_document_intelligence.py
+│   ├── 05_search_tool.py
+│   └── pyproject.toml
 └── python/
     ├── README.md
+    ├── .env.example
     ├── chat_with_openai.py
     ├── openapi_test.py
     └── pyproject.toml
@@ -167,7 +218,7 @@ Set the required environment variables and run:
 ```bash
 export AZURE_ENDPOINT="https://<your-foundry-account>.cognitiveservices.azure.com/"
 export AZURE_API_KEY="<api-key>"
-export MODEL_DEPLOYMENT_NAME="example-cd"
+export MODEL_DEPLOYMENT_NAME="gpt-4-1-mini"
 
 bash/test.sh
 ```
