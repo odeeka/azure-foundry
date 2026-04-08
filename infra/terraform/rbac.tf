@@ -43,3 +43,19 @@ resource "azurerm_role_assignment" "translator_named_users" {
   principal_id         = each.value
   principal_type       = "User"
 }
+
+resource "azurerm_role_assignment" "terraform_spi_document_intelligence_user" {
+  count                = var.enable_document_intelligence_deployment && var.assign_current_principal_document_intelligence_user_role ? 1 : 0
+  scope                = azurerm_cognitive_account.document_intelligence[0].id
+  role_definition_name = "Cognitive Services User"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
+resource "azurerm_role_assignment" "document_intelligence_named_users" {
+  for_each = var.enable_document_intelligence_deployment ? toset(var.document_intelligence_user_object_ids) : []
+
+  scope                = azurerm_cognitive_account.document_intelligence[0].id
+  role_definition_name = "Cognitive Services User"
+  principal_id         = each.value
+  principal_type       = "User"
+}

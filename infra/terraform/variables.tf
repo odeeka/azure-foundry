@@ -229,6 +229,46 @@ variable "translator_user_object_ids" {
   default     = []
 }
 
+variable "enable_document_intelligence_deployment" {
+  description = "Whether to deploy a dedicated Azure AI Document Intelligence resource for document extraction tool scenarios."
+  type        = bool
+  default     = false
+}
+
+variable "document_intelligence_account_name_prefix" {
+  description = "Lowercase alphanumeric prefix used for the Azure AI Document Intelligence account name."
+  type        = string
+  default     = "foundry-docintel"
+
+  validation {
+    condition     = can(regex("^[a-z0-9\\-]{3,24}$", var.document_intelligence_account_name_prefix))
+    error_message = "document_intelligence_account_name_prefix must be 3-24 characters of lowercase letters, numbers, or hyphens only."
+  }
+}
+
+variable "document_intelligence_sku" {
+  description = "SKU for the Azure AI Document Intelligence resource. F0 is free tier and S0 is standard."
+  type        = string
+  default     = "S0"
+
+  validation {
+    condition     = contains(["F0", "S0"], var.document_intelligence_sku)
+    error_message = "document_intelligence_sku must be either F0 or S0."
+  }
+}
+
+variable "assign_current_principal_document_intelligence_user_role" {
+  description = "Assign the current authenticated principal the Cognitive Services User role on the document intelligence account."
+  type        = bool
+  default     = true
+}
+
+variable "document_intelligence_user_object_ids" {
+  description = "Additional Microsoft Entra user object IDs that should receive the Cognitive Services User role on the document intelligence account. Useful when Terraform runs as a service principal but local tools run as signed-in users."
+  type        = list(string)
+  default     = []
+}
+
 variable "tags" {
   description = "Optional tags applied to all resources."
   type        = map(string)

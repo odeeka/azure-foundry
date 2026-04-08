@@ -13,6 +13,7 @@ The goal is to provision a minimal Foundry environment that is easy to understan
 - Optional Azure AI Speech resource for tool scenarios
 - Optional Azure AI Language resource for text analytics tool scenarios
 - Optional Azure AI Translator resource for translation tool scenarios
+- Optional Azure AI Document Intelligence resource for document extraction tool scenarios
 - Optional RBAC assignment for the current authenticated principal
 
 The repository is designed for learning and controlled experimentation. It is not a production baseline.
@@ -53,6 +54,7 @@ The `python/`, `bash/`, and `tools/` folders contain local validation scripts an
 │       ├── language.tf
 │       ├── speech.tf
 │       ├── translator.tf
+│       ├── document_intelligence.tf
 │       ├── terraform.tfvars
 │       ├── terraform.tfvars.example
 │       ├── variables.tf
@@ -78,6 +80,7 @@ The `python/`, `bash/`, and `tools/` folders contain local validation scripts an
 - `language.tf`: Optionally creates a dedicated Azure AI Language resource with a custom subdomain for text analytics scenarios.
 - `speech.tf`: Optionally creates a dedicated Azure AI Speech resource with a custom subdomain for Speech SDK scenarios.
 - `translator.tf`: Optionally creates a dedicated Azure AI Translator resource with a custom subdomain for translation scenarios.
+- `document_intelligence.tf`: Optionally creates a dedicated Azure AI Document Intelligence resource with a custom subdomain for document extraction scenarios.
 - `rbac.tf`: Optionally grants the current principal the `Cognitive Services OpenAI User` role on the account.
 - `outputs.tf`: Returns the names and endpoints needed after deployment, including optional Speech outputs.
 - `backend.hcl.example`: Example values for moving Terraform state to Azure Storage.
@@ -152,7 +155,7 @@ See [python/README.md](python/README.md) for the local setup. These scripts are 
 
 ### Tools
 
-See [tools/README.md](tools/README.md) for the local tool examples. If you enable the optional Speech, Language, or Translator deployment in Terraform, use the corresponding outputs for the local scripts.
+See [tools/README.md](tools/README.md) for the local tool examples. If you enable the optional Speech, Language, Translator, or Document Intelligence deployment in Terraform, use the corresponding outputs for the local scripts.
 
 ### Bash
 

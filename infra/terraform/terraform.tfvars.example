@@ -39,6 +39,16 @@ translator_user_object_ids = []
 #   "00000000-0000-0000-0000-000000000000",
 # ]
 
+enable_document_intelligence_deployment = false
+document_intelligence_account_name_prefix = "foundrydocintel"
+document_intelligence_sku = "S0"
+assign_current_principal_document_intelligence_user_role = true
+document_intelligence_user_object_ids = []
+# Example when local scripts run under an Azure CLI user instead of the Terraform service principal:
+# document_intelligence_user_object_ids = [
+#   "00000000-0000-0000-0000-000000000000",
+# ]
+
 tags = {
   project = "azure-ai-foundry-lab"
   env     = "lab"

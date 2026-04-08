@@ -11,7 +11,7 @@ By default, the configuration deploys:
 - a Foundry project
 - an Azure OpenAI model deployment
 
-It can also optionally deploy dedicated Azure AI Speech, Azure AI Language, and Azure AI Translator resources.
+It can also optionally deploy dedicated Azure AI Speech, Azure AI Language, Azure AI Translator, and Azure AI Document Intelligence resources.
 
 ## Optional Speech Deployment
 
@@ -122,6 +122,43 @@ When Translator deployment is enabled, Terraform returns these outputs from [inf
 
 These values are the expected inputs for local Translator scripts in [tools/README.md](tools/README.md).
 
+## Optional Document Intelligence Deployment
+
+The Document Intelligence resource is defined in [infra/terraform/document_intelligence.tf](infra/terraform/document_intelligence.tf) and is disabled by default.
+
+To enable it, set the following variables in your `terraform.tfvars` file:
+
+```hcl
+enable_document_intelligence_deployment                  = true
+document_intelligence_account_name_prefix                = "foundrydocintel"
+document_intelligence_sku                                = "S0"
+assign_current_principal_document_intelligence_user_role = true
+document_intelligence_user_object_ids                    = []
+```
+
+Related variables are defined in [infra/terraform/variables.tf](infra/terraform/variables.tf).
+
+The Document Intelligence resource is created as a dedicated `FormRecognizer` cognitive account with:
+
+- a system-assigned managed identity
+- a custom subdomain
+- public network access controlled by the shared `public_network_access_enabled` variable
+
+The custom subdomain matters for local SDK scenarios that use `DocumentIntelligenceClient` with Microsoft Entra ID.
+
+If Terraform runs under a service principal but the local Document Intelligence scripts run under an Azure CLI user, set `document_intelligence_user_object_ids` to the Microsoft Entra object ID of that user.
+
+## Document Intelligence Outputs
+
+When Document Intelligence deployment is enabled, Terraform returns these outputs from [infra/terraform/outputs.tf](infra/terraform/outputs.tf):
+
+- `document_intelligence_account_name`
+- `document_intelligence_endpoint` as the custom-domain `https://<account-name>.cognitiveservices.azure.com/` endpoint
+- `document_intelligence_region`
+- `document_intelligence_resource_id`
+
+These values are the expected inputs for local Document Intelligence scripts in [tools/README.md](tools/README.md).
+
 ## RBAC
 
 RBAC assignments are defined in [infra/terraform/rbac.tf](infra/terraform/rbac.tf).
@@ -132,9 +169,11 @@ Depending on the flags you enable, Terraform can assign the current authenticate
 - `Cognitive Services Speech User` on the Speech account
 - the role specified by `language_role_definition_name` on the Language account
 - `Cognitive Services User` on the Translator account
+- `Cognitive Services User` on the Document Intelligence account
 
 For Language specifically, Terraform can also assign the same Language role to extra Entra users listed in `language_user_object_ids`.
 For Translator specifically, Terraform can also assign `Cognitive Services User` to extra Entra users listed in `translator_user_object_ids`.
+For Document Intelligence specifically, Terraform can also assign `Cognitive Services User` to extra Entra users listed in `document_intelligence_user_object_ids`.
 
 ## Typical Workflow
 
@@ -146,4 +185,4 @@ terraform plan
 terraform apply
 ```
 
-Use [infra/terraform/terraform.tfvars.example](infra/terraform/terraform.tfvars.example) as the starting point for the base Foundry deployment and the optional Speech, Language, and Translator deployments.
+Use [infra/terraform/terraform.tfvars.example](infra/terraform/terraform.tfvars.example) as the starting point for the base Foundry deployment and the optional Speech, Language, Translator, and Document Intelligence deployments.

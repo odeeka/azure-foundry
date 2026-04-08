@@ -173,3 +173,47 @@ Use the `translator_endpoint` output exactly as returned by Terraform. It should
 If you keep `assign_current_principal_translator_user_role = true`, the current authenticated principal also receives the `Cognitive Services User` role on the Translator resource.
 
 If Terraform runs with a service principal but your local script runs with `az login`, also set `translator_user_object_ids` in Terraform to the Entra object ID of the user who will run the script.
+
+---
+
+## Document Intelligence
+
+The Document Intelligence examples in this folder target a dedicated Azure AI Document Intelligence resource.
+
+Typical scenarios:
+
+- OCR and text extraction from PDFs and images
+- invoice field extraction
+- receipt field extraction
+- layout analysis
+- handwritten text detection
+- custom model driven document processing
+
+If you want to run Document Intelligence examples from this folder, enable the optional Document Intelligence deployment in Terraform.
+
+Relevant Terraform files:
+
+- [infra/terraform/document_intelligence.tf](infra/terraform/document_intelligence.tf)
+- [infra/terraform/variables.tf](infra/terraform/variables.tf)
+- [infra/terraform/outputs.tf](infra/terraform/outputs.tf)
+- [infra/terraform/README.md](infra/terraform/README.md)
+
+Set the following variables in your Terraform settings before `terraform apply`:
+
+- `enable_document_intelligence_deployment = true`
+- `document_intelligence_account_name_prefix = "<unique-prefix>"`
+- `document_intelligence_sku = "S0"` or `"F0"`
+
+After deployment, use these Terraform outputs in your local `.env` or script configuration:
+
+- `document_intelligence_endpoint`
+- `document_intelligence_region`
+- `document_intelligence_resource_id`
+
+Use the `document_intelligence_endpoint` output exactly as returned by Terraform. It should be the custom-domain endpoint in the form `https://<account-name>.cognitiveservices.azure.com/`, which is the value expected by the local Document Intelligence SDK sample.
+
+If you keep `assign_current_principal_document_intelligence_user_role = true`, the current authenticated principal also receives the `Cognitive Services User` role on the Document Intelligence resource.
+
+If Terraform runs with a service principal but your local script runs with `az login`, also set `document_intelligence_user_object_ids` in Terraform to the Entra object ID of the user who will run the script.
+
+The script [tools/04_document_intelligence.py](tools/04_document_intelligence.py) is the local Python working area for these scenarios, while the notebook remains reference material.

@@ -87,3 +87,23 @@ output "translator_resource_id" {
   description = "Resource ID for the Azure AI Translator account when translator deployment is enabled."
   value       = var.enable_translator_deployment ? azurerm_cognitive_account.translator[0].id : null
 }
+
+output "document_intelligence_account_name" {
+  description = "Azure AI Document Intelligence account name when document intelligence deployment is enabled."
+  value       = var.enable_document_intelligence_deployment ? azurerm_cognitive_account.document_intelligence[0].name : null
+}
+
+output "document_intelligence_endpoint" {
+  description = "Custom-domain endpoint for the Azure AI Document Intelligence account when document intelligence deployment is enabled. Use this cognitiveservices.azure.com endpoint for SDK and REST calls."
+  value       = var.enable_document_intelligence_deployment ? "https://${local.document_intelligence_account_name}.cognitiveservices.azure.com/" : null
+}
+
+output "document_intelligence_region" {
+  description = "Azure region for the Azure AI Document Intelligence account when document intelligence deployment is enabled."
+  value       = var.enable_document_intelligence_deployment ? azurerm_cognitive_account.document_intelligence[0].location : null
+}
+
+output "document_intelligence_resource_id" {
+  description = "Resource ID for the Azure AI Document Intelligence account when document intelligence deployment is enabled."
+  value       = var.enable_document_intelligence_deployment ? azurerm_cognitive_account.document_intelligence[0].id : null
+}
