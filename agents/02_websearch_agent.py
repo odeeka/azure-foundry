@@ -1,5 +1,8 @@
+import hashlib
+import json
 import os
 import sys
+from pathlib import Path
 
 from dotenv import load_dotenv
 from azure.ai.projects import AIProjectClient
@@ -9,6 +12,10 @@ from azure.identity import DefaultAzureCredential
 load_dotenv()
 
 AGENT_NAME = "WebSearchAgent-001"
+STATE_FILE = Path(__file__).with_name(".websearch_agent_state.json")
+INSTRUCTIONS = (
+    "You are a research assistant that searches the web to find current, accurate answers to user questions."
+)
 
 
 def require_env(name: str) -> str:
@@ -16,6 +23,67 @@ def require_env(name: str) -> str:
     if not value:
         raise ValueError(f"{name} is not set")
     return value
+
+
+def load_state() -> dict:
+    if not STATE_FILE.exists():
+        return {}
+    try:
+        return json.loads(STATE_FILE.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+
+
+def save_state(state: dict) -> None:
+    STATE_FILE.write_text(json.dumps(state, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def build_fingerprint(agent_name: str, model_name: str, instructions: str) -> str:
+    payload = {
+        "agent_name": agent_name,
+        "instructions": instructions,
+        "model": model_name,
+        "tools": ["web_search_preview"],
+    }
+    serialized = json.dumps(payload, ensure_ascii=True, sort_keys=True)
+    return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
+def create_or_reuse_agent_version(
+    foundry_client: AIProjectClient, agent_name: str, model_name: str, instructions: str
+) -> dict:
+    current_fingerprint = build_fingerprint(agent_name, model_name, instructions)
+    state = load_state()
+
+    if state.get("agent_name") == agent_name and state.get("fingerprint") == current_fingerprint:
+        print(
+            f"Agent definition unchanged. Reusing existing version"
+            f" {state.get('version', 'unknown')} for {agent_name}."
+        )
+        return state
+
+    # WebSearchPreviewTool is a built-in Foundry capability that lets the agent
+    # query Bing to answer questions that need current external information.
+    agent = foundry_client.agents.create_version(
+        agent_name=agent_name,
+        definition=PromptAgentDefinition(
+            model=model_name,
+            instructions=instructions,
+            tools=[WebSearchPreviewTool()],
+        ),
+    )
+
+    state = {
+        "agent_id": agent.id,
+        "agent_name": agent.name,
+        "fingerprint": current_fingerprint,
+        "model": model_name,
+        "version": agent.version,
+    }
+    save_state(state)
+
+    print(f"Agent version created (id: {agent.id}, name: {agent.name}, version: {agent.version})")
+    return state
 
 
 def main() -> int:
@@ -31,16 +99,11 @@ def main() -> int:
 
     chat_client = foundry_client.get_openai_client()
 
-    # Create a web-enabled prompt agent backed by the configured model.
-    # WebSearchPreviewTool is a built-in Foundry capability that lets the agent
-    # query Bing to answer questions that need current external information.
-    foundry_client.agents.create_version(
+    create_or_reuse_agent_version(
+        foundry_client=foundry_client,
         agent_name=AGENT_NAME,
-        definition=PromptAgentDefinition(
-            model=model_name,
-            instructions="You are a research assistant that searches the web to find current, accurate answers to user questions.",
-            tools=[WebSearchPreviewTool()],
-        ),
+        model_name=model_name,
+        instructions=INSTRUCTIONS,
     )
 
     # Start a fresh conversation for the request/response exchange.
