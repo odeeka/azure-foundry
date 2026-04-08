@@ -1,7 +1,7 @@
 resource "azurerm_role_assignment" "terraform_spi_openai_user" {
   count                = var.assign_current_principal_openai_user_role ? 1 : 0
   scope                = azurerm_cognitive_account.foundry.id
-  role_definition_name = "Cognitive Services OpenAI User"
+  role_definition_name = "Cognitive Services User"
   principal_id         = data.azurerm_client_config.current.object_id
 }
 
@@ -9,7 +9,7 @@ resource "azurerm_role_assignment" "openai_named_users" {
   for_each = toset(var.openai_user_object_ids)
 
   scope                = azurerm_cognitive_account.foundry.id
-  role_definition_name = "Cognitive Services OpenAI User"
+  role_definition_name = "Cognitive Services User"
   principal_id         = each.value
   principal_type       = "User"
 }
@@ -19,6 +19,15 @@ resource "azurerm_role_assignment" "terraform_spi_speech_user" {
   scope                = azurerm_cognitive_account.speech[0].id
   role_definition_name = "Cognitive Services Speech User"
   principal_id         = data.azurerm_client_config.current.object_id
+}
+
+resource "azurerm_role_assignment" "speech_named_users" {
+  for_each = var.enable_speech_deployment ? toset(var.speech_user_object_ids) : []
+
+  scope                = azurerm_cognitive_account.speech[0].id
+  role_definition_name = "Cognitive Services Speech User"
+  principal_id         = each.value
+  principal_type       = "User"
 }
 
 resource "azurerm_role_assignment" "terraform_spi_language_user" {
