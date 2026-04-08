@@ -1,0 +1,74 @@
+# Copy this file to terraform.tfvars and adjust values as needed.
+location            = "eastus"
+resource_group_name = "rg-ai-foundry-lab"
+ai_services_sku     = "S0"
+foundry_account_name_prefix = "foundrylab"
+foundry_project_name_prefix = "foundry-demo"
+foundry_project_display_name = "foundry-demo"
+foundry_project_description  = "Demo project for Azure AI Foundry."
+model_deployment_name        = "gpt-4-1-mini"
+model_name                   = "gpt-4.1-mini"
+model_version                = "2025-04-14"
+deployment_sku_name          = "Standard"
+public_network_access_enabled = true
+assign_current_principal_openai_user_role = true
+openai_user_object_ids = []
+# Example when local tools run under an Azure CLI user instead of the Terraform service principal:
+# openai_user_object_ids = [
+#   "00000000-0000-0000-0000-000000000000",
+# ]
+
+enable_speech_deployment = false
+speech_account_name_prefix = "foundryspeech"
+speech_sku = "S0"
+assign_current_principal_speech_user_role = true
+
+enable_language_deployment = false
+language_account_name_prefix = "foundrylanguage"
+language_sku = "S"
+assign_current_principal_language_user_role = true
+language_role_definition_name = "Cognitive Services Language Reader"
+language_user_object_ids = []
+# Example when local scripts run under an Azure CLI user instead of the Terraform service principal:
+# language_user_object_ids = [
+#   "00000000-0000-0000-0000-000000000000",
+# ]
+
+enable_translator_deployment = false
+translator_account_name_prefix = "foundrytranslator"
+translator_sku = "S1"
+assign_current_principal_translator_user_role = true
+translator_user_object_ids = []
+# Example when local scripts run under an Azure CLI user instead of the Terraform service principal:
+# translator_user_object_ids = [
+#   "00000000-0000-0000-0000-000000000000",
+# ]
+
+enable_document_intelligence_deployment = false
+document_intelligence_account_name_prefix = "foundrydocintel"
+document_intelligence_sku = "S0"
+assign_current_principal_document_intelligence_user_role = true
+document_intelligence_user_object_ids = []
+# Example when local scripts run under an Azure CLI user instead of the Terraform service principal:
+# document_intelligence_user_object_ids = [
+#   "00000000-0000-0000-0000-000000000000",
+# ]
+
+enable_search_deployment = false
+search_service_name_prefix = "foundrysearch"
+search_sku = "basic"
+search_replica_count = 1
+search_partition_count = 1
+search_semantic_search_sku = "free"
+search_local_authentication_enabled = false
+assign_current_principal_search_roles = true
+search_user_object_ids = []
+# Example when local scripts run under an Azure CLI user instead of the Terraform service principal:
+# search_user_object_ids = [
+#   "00000000-0000-0000-0000-000000000000",
+# ]
+
+tags = {
+  project = "azure-ai-foundry-lab"
+  env     = "lab"
+}

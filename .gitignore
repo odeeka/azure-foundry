@@ -35,3 +35,11 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+*.env
+*.pyc
+__pycache__/
+.venv/
+python/.venv/
+agents/.agent_state.json
+agents/.code_interpreter_agent_state.json

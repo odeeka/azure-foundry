@@ -1,0 +1,186 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Bored Activity API",
+    "description": "Public teaching API from App Brewery that returns random activities and filtered activity suggestions.",
+    "version": "v1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://bored-api.appbrewery.com"
+    }
+  ],
+  "paths": {
+    "/random": {
+      "get": {
+        "summary": "Get a random activity",
+        "description": "Returns a randomly selected activity from the available activities.",
+        "operationId": "GetRandomActivity",
+        "responses": {
+          "200": {
+            "description": "Successful response containing a single activity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Activity"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/filter": {
+      "get": {
+        "summary": "Filter activities",
+        "description": "Returns a list of activities filtered by type and/or participants.",
+        "operationId": "FilterActivities",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "description": "The type of activity to filter by.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "education",
+                "recreational",
+                "social",
+                "charity",
+                "cooking",
+                "relaxation",
+                "busywork"
+              ]
+            }
+          },
+          {
+            "name": "participants",
+            "in": "query",
+            "description": "The number of participants to filter by.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                8
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response containing a list of matching activities",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Activity"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/activity/{key}": {
+      "get": {
+        "summary": "Get activity by key",
+        "description": "Returns the activity with the specified key.",
+        "operationId": "GetActivityByKey",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "The unique key of the activity.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response containing a single activity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Activity"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Activity": {
+        "type": "object",
+        "description": "A single activity suggestion returned by the Bored Activity API.",
+        "properties": {
+          "activity": {
+            "type": "string",
+            "description": "Description of the activity."
+          },
+          "availability": {
+            "type": "number",
+            "description": "Approximate availability score for the activity."
+          },
+          "type": {
+            "type": "string",
+            "description": "Category of the activity."
+          },
+          "participants": {
+            "type": "integer",
+            "description": "Number of people needed."
+          },
+          "price": {
+            "type": "number",
+            "description": "Relative cost from 0 (free) to 1 (expensive)."
+          },
+          "accessibility": {
+            "type": "string",
+            "description": "How easy the activity is to do."
+          },
+          "duration": {
+            "type": "string",
+            "description": "How long the activity takes, for example minutes, hours, days, or weeks."
+          },
+          "kidFriendly": {
+            "type": "boolean",
+            "description": "Whether the activity is suitable for children."
+          },
+          "link": {
+            "type": "string",
+            "description": "Optional link with more information about the activity."
+          },
+          "key": {
+            "type": "string",
+            "description": "Unique identifier of the activity."
+          }
+        },
+        "required": [
+          "activity",
+          "availability",
+          "type",
+          "participants",
+          "price",
+          "accessibility",
+          "duration",
+          "kidFriendly",
+          "link",
+          "key"
+        ]
+      }
+    }
+  }
+}
